@@ -1,22 +1,95 @@
 # openclaw-shopify-manager
 
-Git-friendly source repo for the `openclaw-shopify-manager` OpenClaw skill.
+Shopify skill for OpenClaw.
 
-## What this is
+It gives OpenClaw a small Shopify connector runtime plus the docs and helper scripts needed to:
 
-This repo contains:
+- connect a Shopify store with OAuth
+- validate callbacks and webhooks
+- expose the connector over HTTPS with Tailscale Serve/Funnel
+- run the connector as a small long-lived backend with systemd
+- handle Docker-shaped deployments without quietly breaking
 
-- an installable OpenClaw skill under `skill/openclaw-shopify-manager/`
-- reusable helper scripts bundled with the skill
-- reference docs for Shopify, Tailscale, systemd, and Docker-shaped deployments
-- example deployment assets
+## Status
 
-## Repo layout
+Early but usable.
 
-- `skill/openclaw-shopify-manager/` — the actual skill folder that gets packaged
-- `dist/` — generated `.skill` packages
-- `scripts/package-skill.sh` — package helper
-- `examples/` — optional reference examples for maintainers
+This repo is a maintainable starting point for a public OpenClaw Shopify skill, not a finished everything-platform. The current scope is deliberately conservative.
+
+## What is included
+
+### Installable skill
+
+- `skill/openclaw-shopify-manager/`
+
+Contains:
+
+- `SKILL.md`
+- Shopify connector runtime
+- Tailscale/systemd helper scripts
+- setup and safety references
+- example config and service assets
+
+### Maintainer files
+
+- `scripts/package-skill.sh`
+- `examples/`
+- `dist/` for generated `.skill` packages
+
+## Current capability
+
+### Connector/runtime
+
+- generate Shopify auth/install URL
+- receive OAuth callback
+- exchange offline token
+- validate webhook HMAC
+- expose a small local HTTP service
+- make Shopify Admin GraphQL calls
+
+### Read operations
+
+- shop info
+- list/get products
+- list blogs
+- list articles
+
+### Conservative write operations
+
+- update product fields
+- create article
+- update article
+
+## Deployment models
+
+### Recommended
+
+1. **Host/VM**
+   - connector on host
+   - systemd on host
+   - Tailscale on host
+
+2. **OpenClaw in Docker, connector on host**
+   - usually the cleanest Docker setup
+
+3. **OpenClaw in Docker, connector sidecar container**
+   - valid if you want a more containerized layout
+
+### Not recommended except for experiments
+
+- OpenClaw and the Shopify connector crammed into one container
+
+## Why Tailscale is part of this
+
+Shopify needs a stable public HTTPS callback/webhook destination.
+
+For many OpenClaw users, Tailscale Serve/Funnel is the simplest production-friendly way to get there without introducing a separate reverse proxy stack.
+
+This skill includes guidance for:
+
+- checking whether Tailscale is installed
+- guiding users through Tailscale-based exposure
+- mapping a public path prefix to the local Shopify connector
 
 ## Package the skill
 
@@ -28,9 +101,33 @@ Output:
 
 - `dist/openclaw-shopify-manager.skill`
 
-## Notes
+## Repo layout
 
-- Keep secrets out of git.
-- Put runtime secrets in `.env` files on the target host or mounted runtime volume.
-- For Docker-based OpenClaw installs, prefer running the Shopify connector on the host or as a sidecar container.
-- The packaged skill is intentionally lean; human-facing repo docs live outside the skill folder.
+- `skill/openclaw-shopify-manager/` — packaged skill contents
+- `scripts/package-skill.sh` — packaging helper
+- `examples/` — maintainer examples and deployment notes
+- `dist/` — generated `.skill` packages
+
+## First-time maintainer workflow
+
+1. edit skill/runtime files
+2. package the skill
+3. test on a clean OpenClaw install
+4. commit changes
+5. tag a release
+6. attach the `.skill` package to the GitHub release
+
+## Safety stance
+
+- keep secrets out of git
+- keep Shopify secrets in `.env`
+- prefer least-privilege scopes
+- default to confirmation before mutations
+- prefer host/sidecar deployment over clever container hacks
+
+## Near-term roadmap
+
+- add clean install walkthrough for a fresh machine
+- add one fully tested Docker sidecar walkthrough
+- add more Shopify operations carefully, not indiscriminately
+- smoke-test against a dedicated dev store before each release
