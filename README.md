@@ -111,7 +111,7 @@ Output:
 ## First-time maintainer workflow
 
 1. edit skill/runtime files
-2. package the skill
+2. run checks (`npm run check`)
 3. test on a clean OpenClaw install
 4. commit changes
 5. tag a release
@@ -126,6 +126,11 @@ Output:
 - prefer host/sidecar deployment over clever container hacks
 
 ## Near-term roadmap
+
+- add clean install walkthrough for a fresh machine
+- add one fully tested Docker sidecar walkthrough
+- add more Shopify operations carefully, not indiscriminately
+- smoke-test against a dedicated dev store before each release
 
 - add clean install walkthrough for a fresh machine
 - add one fully tested Docker sidecar walkthrough

@@ -1,0 +1,6 @@
+# No third-party Python packages are required for this repo right now.
+#
+# Packaging relies on OpenClaw's bundled skill tooling:
+#   /usr/lib/node_modules/openclaw/skills/skill-creator/scripts/package_skill.py
+#
+# If standalone Python tooling is introduced later, pin it here.

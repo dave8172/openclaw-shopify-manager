@@ -2,6 +2,7 @@
 
 ## Before release
 
+- [ ] run checks: `npm run check`
 - [ ] package the skill: `./scripts/package-skill.sh`
 - [ ] verify `dist/openclaw-shopify-manager.skill` exists
 - [ ] run syntax checks on bundled scripts
