@@ -1,0 +1,15 @@
+services:
+  shopify-connector:
+    image: node:22-bookworm-slim
+    working_dir: /runtime
+    command: ["node", "/runtime/shopify-connector.mjs", "run-server"]
+    volumes:
+      - ./shopify-runtime:/runtime
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8787:8787"
+
+# Notes:
+# - Keep runtime files in ./shopify-runtime
+# - Copy shopify-connector.mjs, config.json, and .env into that directory
+# - Prefer host Tailscale or a host reverse proxy for public HTTPS

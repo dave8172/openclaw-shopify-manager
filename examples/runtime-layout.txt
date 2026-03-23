@@ -1,0 +1,9 @@
+Suggested runtime root after installation:
+
+~/oc/shopify-runtime/
+  config.json
+  .env
+  shopify-connector.mjs
+  shopify-connector.service
+  state/
+  logs/
