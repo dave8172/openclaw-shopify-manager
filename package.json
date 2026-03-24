@@ -1,6 +1,6 @@
 {
   "name": "openclaw-shopify-manager",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Git-friendly source repo for the openclaw-shopify-manager skill.",
   "license": "MIT",
@@ -11,7 +11,7 @@
   "scripts": {
     "package-skill": "./scripts/package-skill.sh",
     "check:node": "node --check skill/openclaw-shopify-manager/scripts/shopify-connector.mjs",
-    "check:shell": "bash -n skill/openclaw-shopify-manager/scripts/shopify-systemd.sh && bash -n skill/openclaw-shopify-manager/scripts/check-tailscale.sh && bash -n skill/openclaw-shopify-manager/scripts/install-runtime.sh",
+    "check:shell": "bash -n skill/openclaw-shopify-manager/scripts/check-tailscale.sh",
     "check": "npm run check:node && npm run check:shell && npm run package-skill"
   }
 }

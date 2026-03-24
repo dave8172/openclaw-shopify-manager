@@ -24,29 +24,25 @@ The bundled service template runs the connector with:
 
 Use `assets/shopify-connector.service` as the template.
 
-## Lifecycle helper
+## Manual lifecycle management
 
-Use `scripts/shopify-systemd.sh`:
+This skill intentionally ships documentation and a service template, not a privileged installer helper.
 
-- `install` — copy service file and reload systemd
-- `start`
-- `stop`
-- `restart`
-- `status`
-- `logs`
+Use `assets/shopify-connector.service` as the template, then manage the service with standard host commands:
 
-The script supports overriding:
-
-- `SERVICE_NAME`
-- `RUNTIME_ROOT`
-- `SERVICE_FILE_SOURCE`
+- `sudo install -m 0644 shopify-connector.service /etc/systemd/system/shopify-connector.service`
+- `sudo systemctl daemon-reload`
+- `sudo systemctl enable shopify-connector.service`
+- `sudo systemctl start shopify-connector.service`
+- `systemctl --no-pager --full status shopify-connector.service`
+- `journalctl -u shopify-connector.service -n 100 --no-pager`
 
 ## Typical flow
 
 1. Prepare runtime root with config and `.env`
-2. Adjust the service template if needed
-3. Install the service
-4. Start it
+2. Copy and adjust the service template if needed
+3. Install the service file manually
+4. Start it with `systemctl`
 5. Verify local `healthz`
 6. Expose with Tailscale Serve/Funnel if desired
 

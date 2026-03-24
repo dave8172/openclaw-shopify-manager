@@ -64,11 +64,11 @@ Why it is not ideal:
 
 ### systemd
 
-The bundled `shopify-systemd.sh` helper assumes a host or VM with systemd.
+The bundled service template is for host or VM deployments with systemd.
 
 If the connector runs in a normal container:
 
-- do not use the systemd helper
+- do not try to use host-style systemd management inside the container
 - use your container orchestrator instead
 
 ### Tailscale
