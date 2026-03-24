@@ -91,6 +91,27 @@ This skill includes guidance for:
 - guiding users through Tailscale-based exposure
 - mapping a public path prefix to the local Shopify connector
 
+## Quick install
+
+### Install from release asset
+
+1. Download `openclaw-shopify-manager.skill` from the latest GitHub release.
+2. Import/install it into your OpenClaw skills setup using your normal skill installation flow.
+3. Use the bundled assets/scripts to scaffold a runtime directory for the Shopify connector.
+
+### Local maintainer/dev install
+
+```bash
+git clone https://github.com/dave8172/openclaw-shopify-manager.git
+cd openclaw-shopify-manager
+npm run check
+./scripts/package-skill.sh
+```
+
+Output:
+
+- `dist/openclaw-shopify-manager.skill`
+
 ## Package the skill
 
 ```bash
