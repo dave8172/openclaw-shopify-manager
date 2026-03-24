@@ -6,6 +6,12 @@
 
 It gives you a small Shopify connector runtime plus setup guidance for exposing a stable HTTPS callback/webhook endpoint, usually with Tailscale Serve/Funnel.
 
+## Project links
+
+- Project page: <https://dave8172-website.vercel.app/projects/openclaw-shopify-manager>
+- GitHub releases: <https://github.com/dave8172/openclaw-shopify-manager/releases>
+- ClawHub listing: <https://clawhub.ai/skills/openclaw-shopify-manager>
+
 ## What this skill does
 
 This skill helps OpenClaw:

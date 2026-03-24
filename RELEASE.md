@@ -14,7 +14,7 @@
 ## Release flow
 
 - [ ] commit final changes
-- [ ] create annotated tag: `git tag -a v0.1.3 -m "v0.1.3"`
+- [ ] create annotated tag: `git tag -a v0.1.4 -m "v0.1.4"`
 - [ ] push branch and tag: `git push origin main --follow-tags`
 - [ ] create GitHub release for the tag
 - [ ] attach `dist/openclaw-shopify-manager.skill`
