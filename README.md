@@ -116,20 +116,42 @@ Recommended shape:
 1. Download `openclaw-shopify-manager.skill` from the latest release:
    - <https://github.com/dave8172/openclaw-shopify-manager/releases>
 2. Import/install it using your normal OpenClaw skill installation flow.
-3. Create a runtime directory for the connector, for example:
+3. If you want to inspect or reuse the bundled runtime files directly, extract the package locally. A `.skill` file is just a zip archive:
 
 ```bash
-mkdir -p ~/oc/shopify-runtime
+mkdir -p ~/oc/shopify-skill-src
+unzip openclaw-shopify-manager.skill -d ~/oc/shopify-skill-src
 ```
 
-4. Copy the bundled examples into your runtime directory:
-   - `config.example.json`
-   - `env.example`
-   - `shopify-connector.service`
-5. Fill in your Shopify app credentials and callback URL.
-6. Start the connector.
-7. Expose it over HTTPS.
-8. Run the OAuth install flow.
+After extraction, the bundled files will be under:
+
+```text
+~/oc/shopify-skill-src/openclaw-shopify-manager/
+  assets/
+  scripts/
+  references/
+  SKILL.md
+```
+
+4. Create a runtime directory for the connector, for example:
+
+```bash
+mkdir -p ~/oc/shopify-runtime/{state,logs}
+```
+
+5. Copy the bundled runtime files you need into that runtime directory:
+
+```bash
+cp ~/oc/shopify-skill-src/openclaw-shopify-manager/scripts/shopify-connector.mjs ~/oc/shopify-runtime/
+cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/config.example.json ~/oc/shopify-runtime/config.json
+cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/env.example ~/oc/shopify-runtime/.env
+cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/shopify-connector.service ~/oc/shopify-runtime/
+```
+
+6. Fill in your Shopify app credentials and callback URL.
+7. Start the connector.
+8. Expose it over HTTPS.
+9. Run the OAuth install flow.
 
 ## Minimal host setup
 
@@ -145,14 +167,14 @@ Example host runtime layout:
   logs/
 ```
 
-Example setup flow:
+Example setup flow after extracting the `.skill` package:
 
 ```bash
 mkdir -p ~/oc/shopify-runtime/{state,logs}
-cp config.example.json ~/oc/shopify-runtime/config.json
-cp env.example ~/oc/shopify-runtime/.env
-cp shopify-connector.service ~/oc/shopify-runtime/
-cp shopify-connector.mjs ~/oc/shopify-runtime/
+cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/config.example.json ~/oc/shopify-runtime/config.json
+cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/env.example ~/oc/shopify-runtime/.env
+cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/shopify-connector.service ~/oc/shopify-runtime/
+cp ~/oc/shopify-skill-src/openclaw-shopify-manager/scripts/shopify-connector.mjs ~/oc/shopify-runtime/
 ```
 
 Edit:
