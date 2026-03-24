@@ -1,6 +1,6 @@
 # openclaw-shopify-manager
 
-[Available on ClawHub](https://clawhub.ai/skills/openclaw-shopify-manager) · [GitHub Releases](https://github.com/dave8172/openclaw-shopify-manager/releases)
+[Available on ClawHub](https://clawhub.ai/skills/openclaw-shopify-manager) · [GitHub Releases](https://github.com/dave8172/openclaw-shopify-manager/releases) · [Project Page](https://dave8172-website.vercel.app/projects/openclaw-shopify-manager)
 
 `openclaw-shopify-manager` is an OpenClaw skill for connecting OpenClaw to a Shopify store.
 

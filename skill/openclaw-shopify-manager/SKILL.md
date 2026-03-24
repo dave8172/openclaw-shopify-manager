@@ -32,7 +32,7 @@ Use this skill to set up and operate a Shopify connector for OpenClaw with a sma
 4. Read `references/docker.md` when OpenClaw or the connector runs in Docker or another containerized environment.
 5. Use `scripts/shopify-connector.mjs` for auth URL generation, callback handling, webhook validation, and API calls.
 6. Use `scripts/check-tailscale.sh` to detect whether Tailscale is present and whether Serve/Funnel is likely available.
-7. Use `references/systemd.md` plus `assets/shopify-connector.service` for documentation-only systemd setup guidance on host systems.
+7. Use `references/systemd.md` plus `assets/shopify-connector.service.txt` for documentation-only systemd setup guidance on host systems.
 
 ## Safety rules
 
@@ -111,6 +111,11 @@ Use write commands only after user confirmation.
 - Connector runtime: `scripts/shopify-connector.mjs`
 - Service template: `assets/shopify-connector.service`
 - Tailscale checker: `scripts/check-tailscale.sh`
+- Example env/config/service files: `assets/`
+
+
+
+cripts/check-tailscale.sh`
 - Example env/config/service files: `assets/`
 
 
