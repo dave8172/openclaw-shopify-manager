@@ -383,7 +383,8 @@ async function runServer(config, options = {}) {
           shop: req.headers['x-shopify-shop-domain'] || null,
           webhookId: req.headers['x-shopify-webhook-id'] || null,
           path: url.pathname,
-          body: rawBody.toString('utf8')
+          bodySha256: sha256(rawBody),
+          bodyBytes: rawBody.length
         }));
         return send(res, 200, 'ok');
       }

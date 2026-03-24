@@ -1,6 +1,6 @@
 ---
 name: openclaw-shopify-manager
-description: Connect OpenClaw to Shopify stores for secure store operations, OAuth setup, webhook validation, small backend endpoint management, and production-friendly exposure via Tailscale Serve/Funnel. Use when setting up or operating Shopify access for OpenClaw, installing a Shopify app callback endpoint, checking Shopify connectivity, managing product/content/order workflows, guiding Tailscale installation or configuration, handling Docker/container deployment edge cases, or preparing a host-managed Shopify connector service.
+description: Connect OpenClaw to Shopify stores for least-privilege OAuth setup, webhook signature validation, read-first store operations, and a small localhost-bound connector that can be published through user-managed HTTPS ingress such as Tailscale Serve. Use when setting up or operating Shopify access for OpenClaw, installing a Shopify app callback endpoint, checking Shopify connectivity, managing product/content/order workflows, handling Docker/container deployment edge cases, or preparing a host-managed Shopify connector service.
 metadata:
   {
     "openclaw":
@@ -30,9 +30,10 @@ Use this skill to set up and operate a Shopify connector for OpenClaw with a sma
 2. Read `references/tailscale.md` when Tailscale is missing or needs configuration.
 3. Read `references/systemd.md` when installing or operating the backend as a host service.
 4. Read `references/docker.md` when OpenClaw or the connector runs in Docker or another containerized environment.
-5. Use `scripts/shopify-connector.mjs` for auth URL generation, callback handling, webhook validation, and API calls.
-6. Use `scripts/check-tailscale.sh` to detect whether Tailscale is present and whether Serve/Funnel is likely available.
-7. Use `references/systemd.md` plus `assets/shopify-connector.service.txt` for documentation-only systemd setup guidance on host systems.
+5. Read `references/security-and-behavior.md` when clarifying what the skill does and does not do.
+6. Use `scripts/shopify-connector.mjs` for auth URL generation, callback handling, webhook validation, and API calls.
+7. Use `scripts/check-tailscale.sh` to detect whether Tailscale is present and whether Serve/Funnel is likely available.
+8. Use `references/systemd.md` plus `assets/shopify-connector.service.txt` for documentation-only systemd setup guidance on host systems.
 
 ## Safety rules
 
