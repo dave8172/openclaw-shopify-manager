@@ -1,159 +1,299 @@
 # openclaw-shopify-manager
 
-Shopify skill for OpenClaw.
+`openclaw-shopify-manager` is an OpenClaw skill for connecting OpenClaw to a Shopify store.
 
-It gives OpenClaw a small Shopify connector runtime plus the docs and helper scripts needed to:
+It gives you a small Shopify connector runtime plus setup guidance for exposing a stable HTTPS callback/webhook endpoint, usually with Tailscale Serve/Funnel.
 
-- connect a Shopify store with OAuth
-- validate callbacks and webhooks
-- expose the connector over HTTPS with Tailscale Serve/Funnel
-- run the connector as a small long-lived backend with systemd
-- handle Docker-shaped deployments without quietly breaking
+## What this skill does
 
-## Status
+This skill helps OpenClaw:
 
-Early but usable.
+- connect a Shopify app with OAuth
+- receive the Shopify callback and store the offline token locally
+- validate incoming Shopify webhooks
+- run a small backend endpoint for Shopify integration
+- guide setup for Tailscale exposure
+- guide setup for systemd service control on host/VM installs
+- handle Docker-shaped deployments without assuming everything runs on bare metal
 
-This repo is a maintainable starting point for a public OpenClaw Shopify skill, not a finished everything-platform. The current scope is deliberately conservative.
+## What you can use it for
 
-## What is included
+Current scope includes:
 
-### Installable skill
+- Shopify auth/install flow
+- shop info lookup
+- product read/update helpers
+- blog/article read/create/update helpers
+- connector start/stop/status/logs guidance
+- deployment guidance for host, Tailscale, systemd, and Docker sidecars
 
-- `skill/openclaw-shopify-manager/`
+## How it works
 
-Contains:
+The skill bundles a small connector script that runs locally and does three main jobs:
 
-- `SKILL.md`
-- Shopify connector runtime
-- Tailscale/systemd helper scripts
-- setup and safety references
-- example config and service assets
+1. generate the Shopify OAuth install URL
+2. accept the Shopify callback and exchange the code for an offline token
+3. accept and validate Shopify webhooks
 
-### Maintainer files
+The connector is meant to run as a small local service.
 
-- `scripts/package-skill.sh`
-- `examples/`
-- `dist/` for generated `.skill` packages
+Typical production flow:
 
-## Current capability
+- connector runs locally on `127.0.0.1:8787`
+- Tailscale Serve/Funnel exposes it at a stable HTTPS path
+- Shopify sends the callback/webhooks to that public HTTPS URL
+- OpenClaw uses the saved token for Shopify Admin API actions
 
-### Connector/runtime
+## Requirements
 
-- generate Shopify auth/install URL
-- receive OAuth callback
-- exchange offline token
-- validate webhook HMAC
-- expose a small local HTTP service
-- make Shopify Admin GraphQL calls
+You will generally want:
 
-### Read operations
+- an OpenClaw instance
+- Node.js 22+
+- bash
+- python3
+- a Shopify app with API key and secret
+- a stable public HTTPS callback URL
 
-- shop info
-- list/get products
-- list blogs
-- list articles
+For the easiest production-friendly setup, use:
 
-### Conservative write operations
+- Tailscale on the host
+- the connector on the host or in a dedicated sidecar
 
-- update product fields
-- create article
-- update article
+## Recommended deployment modes
 
-## Deployment models
+## 1) Best default: host or VM deployment
 
-### Recommended
+Use this if OpenClaw runs directly on a machine or VM.
 
-1. **Host/VM**
-   - connector on host
-   - systemd on host
-   - Tailscale on host
+Recommended shape:
 
-2. **OpenClaw in Docker, connector on host**
-   - usually the cleanest Docker setup
+- connector on host
+- systemd on host
+- Tailscale on host
 
-3. **OpenClaw in Docker, connector sidecar container**
-   - valid if you want a more containerized layout
+Why this is best:
 
-### Not recommended except for experiments
+- simplest service management
+- easiest Tailscale setup
+- clear local vs public networking
 
-- OpenClaw and the Shopify connector crammed into one container
+## 2) OpenClaw in Docker, connector on host
 
-## Why Tailscale is part of this
+Use this if OpenClaw is containerized but you still want the simplest reliable Shopify setup.
 
-Shopify needs a stable public HTTPS callback/webhook destination.
+Recommended shape:
 
-For many OpenClaw users, Tailscale Serve/Funnel is the simplest production-friendly way to get there without introducing a separate reverse proxy stack.
+- OpenClaw in Docker
+- Shopify connector on host
+- Tailscale on host
 
-This skill includes guidance for:
+Why this is good:
 
-- checking whether Tailscale is installed
-- guiding users through Tailscale-based exposure
-- mapping a public path prefix to the local Shopify connector
+- avoids forcing systemd into containers
+- avoids awkward Tailscale-in-container setups
+- keeps callback/webhook networking easier to reason about
 
-## Quick install
+## 3) OpenClaw in Docker, connector as sidecar
 
-### Install from release asset
+Use this if you want a more containerized deployment.
 
-1. Download `openclaw-shopify-manager.skill` from the latest GitHub release.
-2. Import/install it into your OpenClaw skills setup using your normal skill installation flow.
-3. Use the bundled assets/scripts to scaffold a runtime directory for the Shopify connector.
+Recommended shape:
 
-### Local maintainer/dev install
+- OpenClaw in one container
+- Shopify connector in a second container
+- Tailscale or reverse proxy on the host
+- persistent mounted volume for connector state/logs/config
+
+## Not recommended
+
+- cramming OpenClaw, Shopify connector, and Tailscale into one general-purpose container unless you are just experimenting
+
+## Install
+
+## Install the skill
+
+1. Download `openclaw-shopify-manager.skill` from the latest release:
+   - <https://github.com/dave8172/openclaw-shopify-manager/releases>
+2. Import/install it using your normal OpenClaw skill installation flow.
+3. Create a runtime directory for the connector, for example:
 
 ```bash
-git clone https://github.com/dave8172/openclaw-shopify-manager.git
-cd openclaw-shopify-manager
-npm run check
-./scripts/package-skill.sh
+mkdir -p ~/oc/shopify-runtime
 ```
 
-Output:
+4. Copy the bundled examples into your runtime directory:
+   - `config.example.json`
+   - `env.example`
+   - `shopify-connector.service`
+5. Fill in your Shopify app credentials and callback URL.
+6. Start the connector.
+7. Expose it over HTTPS.
+8. Run the OAuth install flow.
 
-- `dist/openclaw-shopify-manager.skill`
+## Minimal host setup
 
-## Package the skill
+Example host runtime layout:
+
+```text
+~/oc/shopify-runtime/
+  config.json
+  .env
+  shopify-connector.mjs
+  shopify-connector.service
+  state/
+  logs/
+```
+
+Example setup flow:
 
 ```bash
-./scripts/package-skill.sh
+mkdir -p ~/oc/shopify-runtime/{state,logs}
+cp config.example.json ~/oc/shopify-runtime/config.json
+cp env.example ~/oc/shopify-runtime/.env
+cp shopify-connector.service ~/oc/shopify-runtime/
+cp shopify-connector.mjs ~/oc/shopify-runtime/
 ```
 
-Output:
+Edit:
 
-- `dist/openclaw-shopify-manager.skill`
+- `~/oc/shopify-runtime/config.json`
+- `~/oc/shopify-runtime/.env`
 
-## Repo layout
+Then start the connector manually for first verification:
 
-- `skill/openclaw-shopify-manager/` — packaged skill contents
-- `scripts/package-skill.sh` — packaging helper
-- `examples/` — maintainer examples and deployment notes
-- `dist/` — generated `.skill` packages
+```bash
+cd ~/oc/shopify-runtime
+node ./shopify-connector.mjs run-server
+```
 
-## First-time maintainer workflow
+Expected local health check:
 
-1. edit skill/runtime files
-2. run checks (`npm run check`)
-3. test on a clean OpenClaw install
-4. commit changes
-5. tag a release
-6. attach the `.skill` package to the GitHub release
+```bash
+curl http://127.0.0.1:8787/healthz
+```
 
-## Safety stance
+Expected response:
 
-- keep secrets out of git
-- keep Shopify secrets in `.env`
-- prefer least-privilege scopes
-- default to confirmation before mutations
-- prefer host/sidecar deployment over clever container hacks
+```text
+ok
+```
 
-## Near-term roadmap
+If you want long-lived service management, install the systemd service and use normal start/stop/status operations.
 
-- add clean install walkthrough for a fresh machine
-- add one fully tested Docker sidecar walkthrough
-- add more Shopify operations carefully, not indiscriminately
-- smoke-test against a dedicated dev store before each release
+## Minimal Docker sidecar setup
 
-- add clean install walkthrough for a fresh machine
-- add one fully tested Docker sidecar walkthrough
-- add more Shopify operations carefully, not indiscriminately
-- smoke-test against a dedicated dev store before each release
+If OpenClaw runs in Docker, a sidecar connector is often cleaner than forcing everything into one container.
+
+Example Compose service:
+
+```yaml
+services:
+  shopify-connector:
+    image: node:22-bookworm-slim
+    working_dir: /runtime
+    command: ["node", "/runtime/shopify-connector.mjs", "run-server"]
+    volumes:
+      - ./shopify-runtime:/runtime
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8787:8787"
+```
+
+Suggested sidecar runtime directory:
+
+```text
+./shopify-runtime/
+  config.json
+  .env
+  shopify-connector.mjs
+  state/
+  logs/
+```
+
+Important notes:
+
+- persist `config.json`, `.env`, `state/`, and `logs/`
+- prefer Tailscale on the host
+- do not rely on systemd inside the container
+- make sure the public callback path matches Shopify exactly
+
+## Tailscale setup pattern
+
+A common path-prefix setup is:
+
+- OpenClaw stays on `/`
+- Shopify connector is exposed on `/shopify-manager`
+
+If the connector listens on `127.0.0.1:8787`, the host can expose it like this:
+
+```bash
+tailscale serve --https=443 /shopify-manager http://127.0.0.1:8787
+tailscale funnel --https=443 on
+```
+
+Then verify:
+
+```bash
+curl -I https://YOUR-TAILSCALE-HOSTNAME/shopify-manager/healthz
+```
+
+Your Shopify app values should then usually look like:
+
+- App URL: `https://YOUR-TAILSCALE-HOSTNAME/shopify-manager`
+- Redirect URL: `https://YOUR-TAILSCALE-HOSTNAME/shopify-manager/shopify/callback`
+- Webhook base: `https://YOUR-TAILSCALE-HOSTNAME/shopify-manager/shopify/webhooks`
+
+## Running the OAuth install flow
+
+Once your config is filled and the connector is reachable:
+
+Generate the auth URL:
+
+```bash
+node ./shopify-connector.mjs auth-url
+```
+
+Open the returned URL in a browser, approve the app install, and let Shopify redirect back to your configured callback URL.
+
+After a successful callback, the connector stores the offline token locally in `.env`.
+
+## Verifying the connection
+
+Use a read-only check first:
+
+```bash
+node ./shopify-connector.mjs shop-info
+```
+
+You can also test the basic connection with:
+
+```bash
+node ./shopify-connector.mjs test
+```
+
+## Safety notes
+
+- keep Shopify secrets out of git
+- keep the connector bound locally when possible
+- prefer least-privilege Shopify scopes
+- confirm store-changing operations before using them
+- use host/sidecar deployment over clever all-in-one container setups
+
+## Where to get the packaged skill
+
+Releases:
+
+- <https://github.com/dave8172/openclaw-shopify-manager/releases>
+
+## Current limitations
+
+This is still an early release.
+
+Current design is intentionally conservative:
+
+- strongest support today is setup/auth/runtime/deployment flow
+- Shopify operation coverage is limited on purpose
+- broad store automation is not bundled yet
+
+That is deliberate. Better a narrow tool that behaves than a sprawling one that trashes a live store.
