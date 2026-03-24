@@ -1,5 +1,7 @@
 # openclaw-shopify-manager
 
+[Available on ClawHub](https://clawhub.ai/skills/openclaw-shopify-manager) · [GitHub Releases](https://github.com/dave8172/openclaw-shopify-manager/releases)
+
 `openclaw-shopify-manager` is an OpenClaw skill for connecting OpenClaw to a Shopify store.
 
 It gives you a small Shopify connector runtime plus setup guidance for exposing a stable HTTPS callback/webhook endpoint, usually with Tailscale Serve/Funnel.
