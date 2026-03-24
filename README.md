@@ -240,6 +240,152 @@ Important notes:
 - do not rely on systemd inside the container
 - make sure the public callback path matches Shopify exactly
 
+## Shopify app setup guide
+
+Before the connector can work, you need a Shopify app with a client ID and client secret.
+
+### What values you need from Shopify
+
+You will usually need these four things:
+
+- **Client ID / API key** → `SHOPIFY_API_KEY`
+- **Client secret / API secret** → `SHOPIFY_API_SECRET`
+- **Store domain** → `SHOPIFY_SHOP`
+- **App callback URL** → `SHOPIFY_REDIRECT_URI`
+
+### Important distinction: store domain vs callback URL
+
+These are different values:
+
+- **Store domain**: your Shopify shop domain, usually something like `your-store.myshopify.com`
+- **Callback URL**: your public HTTPS connector URL, something like `https://YOUR-TAILSCALE-HOSTNAME/shopify-manager/shopify/callback`
+
+Do not put your Tailscale URL into `SHOPIFY_SHOP`.
+Do not put your `myshopify.com` store domain into `SHOPIFY_REDIRECT_URI`.
+
+### How to create the Shopify app
+
+In Shopify, app dashboard labels move around a bit over time, but the flow is usually:
+
+1. Log in to the Shopify admin for the store you want to connect.
+2. Go to **Settings**.
+3. Open **Apps and sales channels**.
+4. Open **Develop apps**.
+   - If app development is not enabled yet, Shopify will ask you to allow custom app development for the store.
+5. Click **Create an app**.
+6. Give it a name like `OpenClaw Shopify Manager`.
+7. Create the app.
+
+### Configure Admin API scopes
+
+Inside the app configuration:
+
+1. Open **Configuration** or **API access**.
+2. Find **Admin API integration**.
+3. Select only the scopes you actually need.
+
+For a reasonable starting point with this skill, use only what matches your workflow. Common examples:
+
+- `read_products`
+- `write_products`
+- `read_content`
+- `write_content`
+- `read_orders`
+
+Avoid broad scopes you do not need.
+
+### Set the app URL and redirect URL
+
+Inside the app setup screen, set:
+
+- **App URL**: your public connector base URL
+- **Allowed redirection URL(s)**: your public callback URL
+
+Example with Tailscale:
+
+- App URL: `https://YOUR-TAILSCALE-HOSTNAME/shopify-manager`
+- Redirect URL: `https://YOUR-TAILSCALE-HOSTNAME/shopify-manager/shopify/callback`
+
+If Shopify allows multiple redirect URLs, keep the exact production callback URL listed there.
+
+### Get the client ID and secret
+
+After the app is created and configured:
+
+1. Open the app overview or API credentials area.
+2. Copy the app's **Client ID** / **API key**.
+3. Reveal and copy the **Client secret** / **API secret**.
+4. Put them into your runtime `.env` file.
+
+Example:
+
+```bash
+SHOPIFY_API_KEY=your_client_id_here
+SHOPIFY_API_SECRET=your_client_secret_here
+```
+
+### Where to find the Shopify store domain
+
+For `SHOPIFY_SHOP`, you want the store's Shopify domain, usually the `*.myshopify.com` domain.
+
+Common ways to find it:
+
+#### Option 1: Browser URL
+
+When you are inside Shopify admin, the browser URL typically includes the store domain, for example:
+
+```text
+https://admin.shopify.com/store/your-store-name
+```
+
+That storefront slug is not always the final value you should use directly, so verify the real store domain in Shopify settings.
+
+#### Option 2: Settings → Domains
+
+In Shopify admin:
+
+1. Go to **Settings**.
+2. Open **Domains**.
+3. Look for the Shopify-managed domain, usually ending in `.myshopify.com`.
+
+That is usually the safest value to use for:
+
+```bash
+SHOPIFY_SHOP=your-store.myshopify.com
+```
+
+#### Option 3: Store details / app setup context
+
+Some Shopify screens also show the store's default Shopify domain in store details or app install context. If available, prefer the `*.myshopify.com` domain over any branded custom storefront domain.
+
+### Which domain should you use in `SHOPIFY_SHOP`?
+
+Use the Shopify shop domain, usually:
+
+```text
+your-store.myshopify.com
+```
+
+Do **not** use:
+
+- your branded storefront domain, like `store.example.com`
+- your Tailscale URL
+- your callback URL
+
+### Final values checklist
+
+Before running the OAuth install flow, verify these values:
+
+```bash
+SHOPIFY_SHOP=your-store.myshopify.com
+SHOPIFY_API_KEY=...
+SHOPIFY_API_SECRET=...
+SHOPIFY_PUBLIC_BASE_URL=https://YOUR-TAILSCALE-HOSTNAME/shopify-manager
+SHOPIFY_REDIRECT_URI=https://YOUR-TAILSCALE-HOSTNAME/shopify-manager/shopify/callback
+```
+
+If these are wrong, the install flow will be annoying in exactly the least fun way.
+
 ## Tailscale setup pattern
 
 A common path-prefix setup is:
