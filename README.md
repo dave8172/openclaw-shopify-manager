@@ -147,7 +147,8 @@ mkdir -p ~/oc/shopify-runtime/{state,logs}
 cp ~/oc/shopify-skill-src/openclaw-shopify-manager/scripts/shopify-connector.mjs ~/oc/shopify-runtime/
 cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/config.example.json ~/oc/shopify-runtime/config.json
 cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/env.example ~/oc/shopify-runtime/.env
-cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/shopify-connector.service ~/oc/shopify-runtime/
+cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/shopify-connector.service.txt ~/oc/shopify-runtime/
+cp ~/oc/shopify-runtime/shopify-connector.service.txt ~/oc/shopify-runtime/shopify-connector.service
 ```
 
 6. Fill in your Shopify app credentials and callback URL.
@@ -175,7 +176,8 @@ Example setup flow after extracting the `.skill` package:
 mkdir -p ~/oc/shopify-runtime/{state,logs}
 cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/config.example.json ~/oc/shopify-runtime/config.json
 cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/env.example ~/oc/shopify-runtime/.env
-cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/shopify-connector.service ~/oc/shopify-runtime/
+cp ~/oc/shopify-skill-src/openclaw-shopify-manager/assets/shopify-connector.service.txt ~/oc/shopify-runtime/
+cp ~/oc/shopify-runtime/shopify-connector.service.txt ~/oc/shopify-runtime/shopify-connector.service
 cp ~/oc/shopify-skill-src/openclaw-shopify-manager/scripts/shopify-connector.mjs ~/oc/shopify-runtime/
 ```
 

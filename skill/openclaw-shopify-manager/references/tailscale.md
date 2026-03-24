@@ -34,14 +34,12 @@ It reports:
 
 Advise the user to install it using the official Tailscale instructions for their OS.
 
-On Debian/Ubuntu, a common path is:
+Do not recommend piping a remote installer script into the shell here.
+Prefer the official package-manager or platform-specific installation path from Tailscale's docs, then bring the node up with:
 
 ```bash
-curl -fsSL https://tailscale.com/install.sh | sh
 sudo tailscale up
 ```
-
-Do not assume this exact command is always appropriate; prefer the official install docs for the target distro if there is any doubt.
 
 ## Recommended path-prefix layout
 

@@ -1,6 +1,23 @@
 ---
 name: openclaw-shopify-manager
-description: Connect OpenClaw to Shopify stores for secure store operations, OAuth setup, webhook validation, small backend endpoint management, and production-friendly exposure via Tailscale Serve/Funnel. Use when setting up or operating Shopify access for OpenClaw, installing a Shopify app callback endpoint, checking Shopify connectivity, managing product/content/order workflows, guiding Tailscale installation or configuration, handling Docker/container deployment edge cases, or creating/controlling a systemd-managed Shopify connector service.
+description: Connect OpenClaw to Shopify stores for secure store operations, OAuth setup, webhook validation, small backend endpoint management, and production-friendly exposure via Tailscale Serve/Funnel. Use when setting up or operating Shopify access for OpenClaw, installing a Shopify app callback endpoint, checking Shopify connectivity, managing product/content/order workflows, guiding Tailscale installation or configuration, handling Docker/container deployment edge cases, or preparing a host-managed Shopify connector service.
+metadata:
+  {
+    "openclaw":
+      {
+        "primaryEnv": "SHOPIFY_API_KEY",
+        "requires":
+          {
+            "env":
+              [
+                "SHOPIFY_API_KEY",
+                "SHOPIFY_API_SECRET",
+                "SHOPIFY_SHOP",
+                "SHOPIFY_REDIRECT_URI",
+              ],
+          },
+      },
+  }
 ---
 
 # OpenClaw Shopify Manager

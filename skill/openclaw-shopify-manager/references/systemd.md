@@ -28,8 +28,9 @@ Use `assets/shopify-connector.service` as the template.
 
 This skill intentionally ships documentation and a service template, not a privileged installer helper.
 
-Use `assets/shopify-connector.service` as the template, then manage the service with standard host commands:
+Use `assets/shopify-connector.service.txt` as the template, rename it locally to `shopify-connector.service`, then manage the service with standard host commands:
 
+- `cp shopify-connector.service.txt shopify-connector.service`
 - `sudo install -m 0644 shopify-connector.service /etc/systemd/system/shopify-connector.service`
 - `sudo systemctl daemon-reload`
 - `sudo systemctl enable shopify-connector.service`
