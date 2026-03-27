@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.1
+
+- redesign README to be cleaner, user-oriented, and Shopify-oriented
+- rewrite ClawHub-facing skill metadata to focus on user value and common Shopify tasks
+- remove maintainer-facing roadmap language from the main product surfaces
+
 ## v0.2.0
 
 - add smoother post-setup usage examples for store info, list products, and get product by title or id

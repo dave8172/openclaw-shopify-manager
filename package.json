@@ -1,6 +1,6 @@
 {
   "name": "openclaw-shopify-manager",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Git-friendly source repo for the openclaw-shopify-manager skill.",
   "license": "MIT",
