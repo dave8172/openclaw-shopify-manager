@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.7
+
+- tighten ClawHub-facing skill metadata so the listing matches the guided low-friction setup positioning
+- keep GitHub and ClawHub versions aligned after the v0.1.6 productization release
+
 ## v0.1.6
 
 - add a guided setup flow with `setup-runtime.mjs guided-setup`
