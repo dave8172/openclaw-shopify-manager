@@ -22,18 +22,20 @@ metadata:
 
 # OpenClaw Shopify Manager
 
-Use this skill to set up and operate a Shopify connector for OpenClaw with a small local backend, a stable public callback/webhook URL, and conservative mutation safety.
+Use this skill to set up and operate a Shopify connector for OpenClaw with a small local backend, a stable public callback/webhook URL, conservative mutation safety, and a canonical low-friction runtime bootstrap.
 
 ## Core workflow
 
-1. Read `references/setup.md` for the deployment path.
-2. Read `references/tailscale.md` when Tailscale is missing or needs configuration.
-3. Read `references/systemd.md` when installing or operating the backend as a host service.
-4. Read `references/docker.md` when OpenClaw or the connector runs in Docker or another containerized environment.
-5. Read `references/security-and-behavior.md` when clarifying what the skill does and does not do.
-6. Use `scripts/shopify-connector.mjs` for auth URL generation, callback handling, webhook validation, and API calls.
-7. Use `scripts/check-tailscale.sh` to detect whether Tailscale is present and whether Serve/Funnel is likely available.
-8. Use `references/systemd.md` plus `assets/shopify-connector.service.txt` for documentation-only systemd setup guidance on host systems.
+1. Read `references/setup.md` for the canonical bootstrap and deployment path.
+2. Use `scripts/setup-runtime.mjs guided-setup` to create the runtime directory, config files, env file, logs/state folders, and optional systemd unit template.
+3. Read `references/tailscale.md` when Tailscale is missing or needs configuration.
+4. Read `references/systemd.md` when installing or operating the backend as a host service.
+5. Read `references/docker.md` when OpenClaw or the connector runs in Docker or another containerized environment.
+6. Read `references/security-and-behavior.md` when clarifying what the skill does and does not do.
+7. Use `scripts/shopify-connector.mjs` for auth URL generation, callback handling, webhook validation, and Shopify API calls.
+8. Use `scripts/setup-runtime.mjs doctor` to verify runtime completeness.
+9. Use `scripts/check-tailscale.sh` to detect whether Tailscale is present and whether Serve/Funnel is likely available.
+10. Use `references/systemd.md` plus `assets/shopify-connector.service.txt` for documentation-only systemd setup guidance on host systems.
 
 ## Safety rules
 
@@ -47,6 +49,7 @@ Use this skill to set up and operate a Shopify connector for OpenClaw with a sma
 
 - Run the connector locally on `127.0.0.1`.
 - Persist config, token state, and logs under a dedicated directory.
+- Use the canonical runtime bootstrap instead of manual file-copy setup when possible.
 - Expose the connector through a stable HTTPS path.
 - Prefer Tailscale Serve/Funnel when the user wants the simplest production-grade public ingress without adding Caddy or Nginx.
 - Run the connector under systemd for long-lived callback/webhook handling on host/VM deployments.
@@ -56,7 +59,8 @@ Use this skill to set up and operate a Shopify connector for OpenClaw with a sma
 
 ### Connect a store
 
-- Prepare config and `.env` from `assets/` examples.
+- Run `scripts/setup-runtime.mjs guided-setup`.
+- Verify the generated `.env` and `config.json` values.
 - Install/start the systemd service if long-lived operation is needed.
 - Check or install Tailscale if using Serve/Funnel.
 - Generate the auth URL with `scripts/shopify-connector.mjs auth-url`.
@@ -67,7 +71,7 @@ Use this skill to set up and operate a Shopify connector for OpenClaw with a sma
 
 For host/VM deployments:
 
-- Use `assets/shopify-connector.service` as the service template.
+- Use `assets/shopify-connector.service.txt` as the service template.
 - Use `systemctl` and `journalctl` directly for lifecycle and logs.
 - Follow `references/systemd.md` for the manual install and verification flow.
 
@@ -109,15 +113,8 @@ Use write commands only after user confirmation.
 - systemd guide: `references/systemd.md`
 - Docker guide: `references/docker.md`
 - Shopify scopes and safety: `references/scopes-and-safety.md`
+- Runtime bootstrap: `scripts/setup-runtime.mjs`
 - Connector runtime: `scripts/shopify-connector.mjs`
-- Service template: `assets/shopify-connector.service`
+- Service template: `assets/shopify-connector.service.txt`
 - Tailscale checker: `scripts/check-tailscale.sh`
 - Example env/config/service files: `assets/`
-
-
-
-cripts/check-tailscale.sh`
-- Example env/config/service files: `assets/`
-
-
-

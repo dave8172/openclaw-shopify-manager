@@ -1,0 +1,56 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">OpenClaw Shopify Manager first-run success transcript</title>
+  <desc id="desc">Terminal-style screenshot showing the guided setup, health check, OAuth readiness, and a successful shop-info response.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+    <style>
+      .ui { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .title { fill: #e5e7eb; font-size: 18px; font-weight: 600; }
+      .cmd { fill: #93c5fd; }
+      .out { fill: #d1d5db; }
+      .ok { fill: #86efac; }
+      .warn { fill: #fde68a; }
+      .dim { fill: #94a3b8; }
+      .prompt { fill: #c084fc; }
+      .accent { fill: #34d399; }
+    </style>
+  </defs>
+  <rect width="1400" height="900" fill="#0b1120"/>
+  <g filter="url(#shadow)">
+    <rect x="80" y="70" width="1240" height="760" rx="24" fill="url(#bg)" stroke="#1f2937"/>
+    <rect x="80" y="70" width="1240" height="46" rx="24" fill="#111827"/>
+    <circle cx="116" cy="93" r="7" fill="#fb7185"/>
+    <circle cx="140" cy="93" r="7" fill="#fbbf24"/>
+    <circle cx="164" cy="93" r="7" fill="#34d399"/>
+    <text x="700" y="99" text-anchor="middle" class="ui title">first-run success · openclaw-shopify-manager</text>
+    <g class="mono" font-size="24" xml:space="preserve">
+      <text x="120" y="160"><tspan class="prompt">$ </tspan><tspan class="cmd">node ./scripts/setup-runtime.mjs guided-setup --write-service</tspan></text>
+      <text x="120" y="205" class="out">{</text>
+      <text x="160" y="245" class="out">"ok": <tspan class="ok">true</tspan>,</text>
+      <text x="160" y="285" class="out">"runtimeRoot": "~/oc/shopify-runtime",</text>
+      <text x="160" y="325" class="out">"shopifyAppValues": {</text>
+      <text x="200" y="365" class="out">"appUrl": "https://shop-node.ts.net/shopify-manager",</text>
+      <text x="200" y="405" class="out">"redirectUrl": "https://shop-node.ts.net/shopify-manager/shopify/callback"</text>
+      <text x="160" y="445" class="out">},</text>
+      <text x="160" y="485" class="out">"next": { "step1_startLocalServer": "cd ~/oc/shopify-runtime &amp;&amp; node ./shopify-connector.mjs run-server" }</text>
+      <text x="120" y="525" class="out">}</text>
+
+      <text x="120" y="585"><tspan class="prompt">$ </tspan><tspan class="cmd">cd ~/oc/shopify-runtime &amp;&amp; node ./shopify-connector.mjs run-server</tspan></text>
+      <text x="120" y="625" class="out">{ "ok": <tspan class="ok">true</tspan>, "healthUrl": "http://127.0.0.1:8787/healthz" }</text>
+
+      <text x="120" y="685"><tspan class="prompt">$ </tspan><tspan class="cmd">curl http://127.0.0.1:8787/healthz</tspan></text>
+      <text x="120" y="725" class="ok">ok</text>
+
+      <text x="120" y="785"><tspan class="prompt">$ </tspan><tspan class="cmd">node ./shopify-connector.mjs shop-info</tspan></text>
+      <text x="120" y="825" class="out">{ "shop": { "name": "Dev Store", "myshopifyDomain": "dev-store.myshopify.com" } }</text>
+    </g>
+  </g>
+  <text x="80" y="865" class="ui dim" font-size="18">Demo artifact: guided setup → local health → successful Shopify read.</text>
+</svg>
