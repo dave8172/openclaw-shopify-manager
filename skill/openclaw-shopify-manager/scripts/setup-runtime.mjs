@@ -78,7 +78,34 @@ function writeEnvFile(file, values) {
 function promptFactory() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const ask = (question) => new Promise((resolve) => rl.question(question, resolve));
-  return { ask, close: () => rl.close() };
+  const askSecret = async (question, fallback = '') => {
+    if (!process.stdin.isTTY || !process.stdout.isTTY) return fallback;
+    process.stdout.write(`${question}${fallback ? ' [stored/keep current]' : ''}: `);
+    const stdin = process.stdin;
+    stdin.resume();
+    stdin.setRawMode(true);
+    let value = '';
+    while (true) {
+      const chunk = await new Promise((resolve) => stdin.once('data', resolve));
+      const text = String(chunk);
+      if (text === '\r' || text === '\n') {
+        process.stdout.write('\n');
+        break;
+      }
+      if (text === '\u0003') {
+        process.stdout.write('^C\n');
+        process.exit(130);
+      }
+      if (text === '\u007f') {
+        if (value.length > 0) value = value.slice(0, -1);
+        continue;
+      }
+      value += text;
+    }
+    stdin.setRawMode(false);
+    return value || fallback;
+  };
+  return { ask, askSecret, close: () => rl.close() };
 }
 
 function defaultRuntimeRoot() {
@@ -165,7 +192,7 @@ function usage() {
   console.log(`OpenClaw Shopify Manager setup helper
 
 Usage:
-  node setup-runtime.mjs init [--runtime-root <dir>] [--shop <shop.myshopify.com>] [--public-base-url <https://host/path>] [--api-key <key>] [--api-secret <secret>] [--mode <read-only|require-confirmation-for-mutations|allow-approved-operations>] [--scopes <csv>] [--write-service]
+  node setup-runtime.mjs init [--runtime-root <dir>] [--shop <shop.myshopify.com>] [--public-base-url <https://host/path>] [--mode <read-only|require-confirmation-for-mutations|allow-approved-operations>] [--scopes <csv>] [--write-service]
   node setup-runtime.mjs guided-setup [same flags as init]
   node setup-runtime.mjs doctor [--runtime-root <dir>]
   node setup-runtime.mjs help
@@ -173,11 +200,13 @@ Usage:
 Notes:
 - init creates a canonical runtime folder with config.json, .env, state/, logs/, shopify-connector.mjs, and an optional systemd service template.
 - guided-setup is an explicit alias for init and is the recommended user-facing command.
+- guided-setup prompts for Shopify secrets and stores them in .env.
 - doctor checks completeness, placeholder values, callback consistency, and likely ingress readiness.
+- avoid passing secrets as CLI flags because they can leak via shell history and process inspection.
 `);
 }
 
-async function collectSetupValues(prompter, tpl) {
+async function collectSetupValues(prompter, tpl, existingEnv = {}) {
   async function getValue(flag, question, fallback = '') {
     if (args[flag] !== undefined) return args[flag];
     if (!prompter) return fallback;
@@ -185,14 +214,20 @@ async function collectSetupValues(prompter, tpl) {
     return answer.trim() || fallback;
   }
 
+  async function getSecret(flag, question, fallback = '') {
+    if (args[flag] !== undefined) return args[flag];
+    if (!prompter) return fallback;
+    return prompter.askSecret(question, fallback);
+  }
+
   const tailscaleHostname = await getValue('tailscale-hostname', 'Tailscale/custom hostname for public HTTPS (omit https://, optional)', '');
   const publicBaseUrl = (await getValue('public-base-url', 'Public base URL for the connector', buildDefaultPublicBase(tailscaleHostname))).replace(/\/$/, '');
-  const shop = await getValue('shop', 'Shopify shop domain', tpl.config.shop || 'example.myshopify.com');
-  const apiKey = await getValue('api-key', 'Shopify API key / client ID', '');
-  const apiSecret = await getValue('api-secret', 'Shopify API secret / client secret', '');
+  const shop = await getValue('shop', 'Shopify shop domain', existingEnv.SHOPIFY_SHOP || tpl.config.shop || 'example.myshopify.com');
+  const apiKey = await getSecret('api-key', 'Shopify API key / client ID (stored in .env only)', existingEnv.SHOPIFY_API_KEY || '');
+  const apiSecret = await getSecret('api-secret', 'Shopify API secret / client secret (stored in .env only)', existingEnv.SHOPIFY_API_SECRET || '');
   const mode = await getValue('mode', 'Operating mode', args.mode || tpl.config.mode || 'require-confirmation-for-mutations');
-  const scopes = normalizeScopes(await getValue('scopes', 'Admin API scopes (comma-separated)', normalizeScopes(args.scopes || tpl.env.SHOPIFY_SCOPES).join(',')));
-  const redirectUri = await getValue('redirect-uri', 'Redirect URI', inferRedirectUri(publicBaseUrl));
+  const scopes = normalizeScopes(await getValue('scopes', 'Admin API scopes (comma-separated)', normalizeScopes(args.scopes || existingEnv.SHOPIFY_SCOPES || tpl.env.SHOPIFY_SCOPES).join(',')));
+  const redirectUri = await getValue('redirect-uri', 'Redirect URI', existingEnv.SHOPIFY_REDIRECT_URI || inferRedirectUri(publicBaseUrl));
   const writeService = Boolean(args['write-service']);
   return { tailscaleHostname, publicBaseUrl, shop, apiKey, apiSecret, mode, scopes, redirectUri, writeService };
 }
@@ -201,7 +236,9 @@ async function initRuntime() {
   const runtimeRoot = path.resolve(expandHome(args['runtime-root'] || defaultRuntimeRoot()));
   const tpl = loadTemplateFiles();
   const prompter = process.stdin.isTTY ? promptFactory() : null;
-  const values = await collectSetupValues(prompter, tpl);
+  const existingEnvPath = path.join(runtimeRoot, '.env');
+  const existingEnv = parseEnvFile(existingEnvPath);
+  const values = await collectSetupValues(prompter, tpl, existingEnv);
 
   ensureDir(runtimeRoot);
   ensureDir(path.join(runtimeRoot, 'state'));
@@ -223,6 +260,7 @@ async function initRuntime() {
 
   const env = {
     ...tpl.env,
+    ...existingEnv,
     SHOPIFY_SHOP: values.shop,
     SHOPIFY_API_KEY: values.apiKey,
     SHOPIFY_API_SECRET: values.apiSecret,
@@ -245,6 +283,7 @@ async function initRuntime() {
   const nextAuthCommand = `cd ${shellQuote(runtimeRoot)} && node ./shopify-connector.mjs auth-url`;
   const nextRunCommand = `cd ${shellQuote(runtimeRoot)} && node ./shopify-connector.mjs run-server`;
   const tailscale = getTailscaleStatus();
+  const cliSecretsUsed = args['api-key'] !== undefined || args['api-secret'] !== undefined;
 
   console.log(JSON.stringify({
     ok: true,
@@ -263,7 +302,14 @@ async function initRuntime() {
       mode: values.mode,
       scopes: values.scopes,
       apiKey: redact(values.apiKey),
-      apiSecret: redact(values.apiSecret)
+      apiSecret: redact(values.apiSecret),
+      accessToken: existingEnv.SHOPIFY_ACCESS_TOKEN ? 'already stored in .env' : 'stored in .env after OAuth'
+    },
+    secretHandling: {
+      secretsFile: envPath,
+      tokenStorage: `${envPath} -> SHOPIFY_ACCESS_TOKEN`,
+      cliSecretsUsed,
+      warning: cliSecretsUsed ? 'Secrets were passed via CLI flags. Prefer interactive entry or direct .env editing next time.' : null
     },
     shopifyAppValues: {
       appUrl: values.publicBaseUrl,
@@ -283,6 +329,7 @@ async function initRuntime() {
       step5_verifyStoreRead: `cd ${shellQuote(runtimeRoot)} && node ./shopify-connector.mjs shop-info`
     },
     notes: [
+      'Paste and keep Shopify secrets in .env only. Do not commit .env.',
       'Point the Shopify app App URL and Allowed redirection URL to the printed values above.',
       'Expose the local connector over HTTPS before completing OAuth.',
       'After OAuth succeeds, SHOPIFY_ACCESS_TOKEN will be stored locally in .env.',
@@ -319,9 +366,9 @@ function doctor() {
     { key: 'publicBaseUrl', ok: Boolean(publicBaseUrl) && !isLikelyPlaceholder(publicBaseUrl), severity: 'error', detail: publicBaseUrl || null },
     { key: 'redirectUri', ok: Boolean(redirectUri) && !isLikelyPlaceholder(redirectUri), severity: 'error', detail: redirectUri || null },
     { key: 'redirectMatchesBase', ok: Boolean(publicBaseUrl && redirectUri) && validateRedirectAgainstBase(publicBaseUrl, redirectUri), severity: 'error', detail: 'redirect should be <publicBaseUrl>/shopify/callback' },
-    { key: 'accessToken', ok: Boolean(accessToken), severity: 'info', detail: accessToken ? 'stored' : 'missing until OAuth completes' },
+    { key: 'accessToken', ok: Boolean(accessToken), severity: 'info', detail: accessToken ? 'stored in .env' : 'missing until OAuth completes' },
     { key: 'installLog', ok: fs.existsSync(installLogPath), severity: 'info', detail: fs.existsSync(installLogPath) ? installLogPath : 'missing until server/OAuth activity' },
-    { key: 'tailscaleInstalled', ok: tailscale.installed, severity: 'warn', detail: tailscale.installed ? 'installed' : 'not installed' },
+    { key: 'tailscaleInstalled', ok: !publicBaseUrl.includes('ts.net') || tailscale.installed, severity: 'warn', detail: tailscale.installed ? 'installed' : 'not installed' },
     { key: 'tailscaleLoggedIn', ok: !tailscale.installed || tailscale.loggedIn, severity: 'warn', detail: tailscale.installed ? (tailscale.loggedIn ? 'logged in' : 'installed but not logged in') : 'not checked' },
     { key: 'tailscaleServe', ok: !tailscale.installed || tailscale.serveSupported, severity: 'warn', detail: tailscale.installed ? (tailscale.serveSupported ? 'supported' : 'not available') : 'not checked' }
   ];
@@ -334,7 +381,7 @@ function doctor() {
     suggestions.push(`Recreate the canonical runtime: node ./scripts/setup-runtime.mjs guided-setup --runtime-root ${shellQuote(runtimeRoot)}`);
   }
   if (errors.some((x) => ['shop', 'apiKey', 'apiSecret', 'publicBaseUrl', 'redirectUri'].includes(x.key))) {
-    suggestions.push(`Fill the missing or placeholder values in ${envPath} and ${configPath}.`);
+    suggestions.push(`Fill the missing or placeholder values in ${envPath} and ${configPath}. Keep secrets only in ${envPath}.`);
   }
   if (errors.some((x) => x.key === 'redirectMatchesBase')) {
     suggestions.push('Set SHOPIFY_REDIRECT_URI to exactly <publicBaseUrl>/shopify/callback.');
@@ -352,6 +399,11 @@ function doctor() {
   console.log(JSON.stringify({
     ok: errors.length === 0,
     runtimeRoot,
+    secretHandling: {
+      secretsFile: envPath,
+      tokenStorage: `${envPath} -> SHOPIFY_ACCESS_TOKEN`,
+      committedSecretsRecommended: false
+    },
     checks,
     summary: {
       errors: errors.length,

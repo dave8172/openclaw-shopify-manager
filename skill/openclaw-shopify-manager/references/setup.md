@@ -28,16 +28,16 @@ By default it creates:
 - state: `~/oc/shopify-runtime/state/`
 - optional service file: `~/oc/shopify-runtime/shopify-connector.service`
 
-Use non-interactive flags when the values are already known:
+Use non-interactive flags only for non-secret values when they are already known:
 
 ```bash
 node ./scripts/setup-runtime.mjs guided-setup \
   --shop your-store.myshopify.com \
   --public-base-url https://YOUR-HOST/shopify-manager \
-  --api-key YOUR_API_KEY \
-  --api-secret YOUR_API_SECRET \
   --write-service
 ```
+
+Paste Shopify secrets into the guided prompt or edit `.env` directly. Avoid passing secrets as CLI flags.
 
 ## Deployment shape decision
 
@@ -108,6 +108,8 @@ Expected keys:
 - `SHOPIFY_API_KEY`
 - `SHOPIFY_API_SECRET`
 - `SHOPIFY_ACCESS_TOKEN`
+
+Keep these in `.env` only. Do not move them into `config.json`, docs, screenshots, or committed files.
 
 ## Production notes
 

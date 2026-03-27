@@ -78,6 +78,8 @@ The helper creates a canonical runtime folder with:
 
 It also prints the exact next commands and the exact Shopify app values to use.
 
+Sensitive values belong in `.env` only. Do not commit `.env`, and avoid passing secrets as CLI flags because they can leak through shell history or process inspection.
+
 ## Fast path example
 
 If you already know your store domain and public HTTPS base URL:
@@ -199,6 +201,8 @@ node ./shopify-connector.mjs auth-url
 ```
 
 Open the returned URL, approve the install, and let Shopify redirect back to the configured callback URL.
+
+After success, the offline token is stored locally in `.env` as `SHOPIFY_ACCESS_TOKEN`.
 
 ## 7) Verify read-only access
 
@@ -365,3 +369,4 @@ npm run package-skill
 - Project page: <https://dave8172-website.vercel.app/projects/openclaw-shopify-manager>
 - GitHub releases: <https://github.com/dave8172/openclaw-shopify-manager/releases>
 - ClawHub listing: <https://clawhub.ai/skills/openclaw-shopify-manager>
+nager>

@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.1.8
+
+- harden guided setup so Shopify secrets are prompted and stored in `.env` only by default
+- keep `SHOPIFY_ACCESS_TOKEN` explicitly documented as `.env`-only local state
+- remove secret-passing examples from the public setup flow and warn against CLI secret flags
+- expand setup/doctor output with explicit secret-handling guidance
+
 ## v0.1.7
 
 - tighten ClawHub-facing skill metadata so the listing matches the guided low-friction setup positioning
