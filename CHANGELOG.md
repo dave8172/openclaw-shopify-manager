@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.9
+
+- add runtime `.gitignore` protection for `.env`, `state/`, and `logs/` during guided setup
+- extend doctor checks to verify runtime `.gitignore` secret protection
+- add clearer top-level secret-handling guidance in README/setup docs
+
 ## v0.1.8
 
 - harden guided setup so Shopify secrets are prompted and stored in `.env` only by default

@@ -6,6 +6,8 @@
 
 `openclaw-shopify-manager` gives OpenClaw a small localhost-bound Shopify connector with least-privilege OAuth, webhook signature validation, read-first store operations, and a practical deployment path for real hosts, VMs, and Docker installs.
 
+**Secret handling:** keep `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`, and `SHOPIFY_ACCESS_TOKEN` in local `.env` only. The guided setup now writes a runtime `.gitignore` to keep `.env`, `state/`, and `logs/` out of git by default.
+
 If the goal is “install, point at a store, finish setup, then just ask for Shopify product information,” that is exactly the direction this skill should optimize for.
 
 ## Who this is for
@@ -78,7 +80,7 @@ The helper creates a canonical runtime folder with:
 
 It also prints the exact next commands and the exact Shopify app values to use.
 
-Sensitive values belong in `.env` only. Do not commit `.env`, and avoid passing secrets as CLI flags because they can leak through shell history or process inspection.
+Sensitive values belong in `.env` only. Do not commit `.env`, and avoid passing secrets as CLI flags because they can leak through shell history or process inspection. The guided setup also writes a runtime `.gitignore` for `.env`, `state/`, and `logs/`.
 
 ## Fast path example
 

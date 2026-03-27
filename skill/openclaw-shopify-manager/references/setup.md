@@ -81,7 +81,7 @@ To confirm the runtime is complete enough for startup/OAuth:
 node ./scripts/setup-runtime.mjs doctor
 ```
 
-This checks whether the canonical runtime files exist, whether required Shopify values are still placeholders, whether the redirect URI matches the public base URL, and whether Tailscale likely needs attention.
+This checks whether the canonical runtime files exist, whether required Shopify values are still placeholders, whether the redirect URI matches the public base URL, whether a runtime `.gitignore` is protecting secrets, and whether Tailscale likely needs attention.
 
 ## Runtime configuration
 
@@ -109,7 +109,7 @@ Expected keys:
 - `SHOPIFY_API_SECRET`
 - `SHOPIFY_ACCESS_TOKEN`
 
-Keep these in `.env` only. Do not move them into `config.json`, docs, screenshots, or committed files.
+Keep these in `.env` only. Do not move them into `config.json`, docs, screenshots, or committed files. The runtime directory should also keep `.env`, `state/`, and `logs/` ignored via `.gitignore`.
 
 ## Production notes
 

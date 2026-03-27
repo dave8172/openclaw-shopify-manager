@@ -188,6 +188,31 @@ function validateRedirectAgainstBase(publicBaseUrl, redirectUri) {
   }
 }
 
+function ensureRuntimeGitignore(runtimeRoot) {
+  const gitignorePath = path.join(runtimeRoot, '.gitignore');
+  const required = ['.env', 'state/', 'logs/'];
+  const existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf8') : '';
+  const lines = existing.split(/\r?\n/).filter(Boolean);
+  let changed = false;
+  for (const item of required) {
+    if (!lines.includes(item)) {
+      lines.push(item);
+      changed = true;
+    }
+  }
+  if (!fs.existsSync(gitignorePath) || changed) {
+    fs.writeFileSync(gitignorePath, lines.join('\n') + '\n');
+  }
+  return gitignorePath;
+}
+
+function hasRuntimeGitignoreProtection(runtimeRoot) {
+  const gitignorePath = path.join(runtimeRoot, '.gitignore');
+  if (!fs.existsSync(gitignorePath)) return false;
+  const content = fs.readFileSync(gitignorePath, 'utf8');
+  return ['.env', 'state/', 'logs/'].every((item) => content.split(/\r?\n/).includes(item));
+}
+
 function usage() {
   console.log(`OpenClaw Shopify Manager setup helper
 
@@ -273,6 +298,7 @@ async function initRuntime() {
   writeJson(configPath, config);
   writeEnvFile(envPath, env);
   fs.writeFileSync(connectorPath, tpl.connector);
+  const runtimeGitignorePath = ensureRuntimeGitignore(runtimeRoot);
 
   if (values.writeService) {
     fs.writeFileSync(servicePath, tpl.service.replaceAll('%h/oc/shopify-runtime', runtimeRoot));
@@ -293,7 +319,8 @@ async function initRuntime() {
       configPath,
       envPath,
       connectorPath,
-      servicePath: values.writeService ? servicePath : null
+      servicePath: values.writeService ? servicePath : null,
+      gitignorePath: runtimeGitignorePath
     },
     setupSummary: {
       shop: values.shop,
@@ -308,6 +335,7 @@ async function initRuntime() {
     secretHandling: {
       secretsFile: envPath,
       tokenStorage: `${envPath} -> SHOPIFY_ACCESS_TOKEN`,
+      runtimeGitignore: runtimeGitignorePath,
       cliSecretsUsed,
       warning: cliSecretsUsed ? 'Secrets were passed via CLI flags. Prefer interactive entry or direct .env editing next time.' : null
     },
@@ -330,6 +358,7 @@ async function initRuntime() {
     },
     notes: [
       'Paste and keep Shopify secrets in .env only. Do not commit .env.',
+      'A runtime .gitignore is written to ignore .env, state/, and logs/.',
       'Point the Shopify app App URL and Allowed redirection URL to the printed values above.',
       'Expose the local connector over HTTPS before completing OAuth.',
       'After OAuth succeeds, SHOPIFY_ACCESS_TOKEN will be stored locally in .env.',
@@ -343,6 +372,7 @@ function doctor() {
   const configPath = path.join(runtimeRoot, 'config.json');
   const envPath = path.join(runtimeRoot, '.env');
   const connectorPath = path.join(runtimeRoot, 'shopify-connector.mjs');
+  const gitignorePath = path.join(runtimeRoot, '.gitignore');
   const stateDir = path.join(runtimeRoot, 'state');
   const logsDir = path.join(runtimeRoot, 'logs');
   const installLogPath = path.join(logsDir, 'shopify-install.log');
@@ -358,6 +388,8 @@ function doctor() {
     { key: 'config.json', ok: fs.existsSync(configPath), severity: 'error', detail: configPath },
     { key: '.env', ok: fs.existsSync(envPath), severity: 'error', detail: envPath },
     { key: 'shopify-connector.mjs', ok: fs.existsSync(connectorPath), severity: 'error', detail: connectorPath },
+    { key: 'runtime.gitignore', ok: fs.existsSync(gitignorePath), severity: 'warn', detail: gitignorePath },
+    { key: 'runtime.gitignore.protectsSecrets', ok: hasRuntimeGitignoreProtection(runtimeRoot), severity: 'warn', detail: '.gitignore should include .env, state/, logs/' },
     { key: 'stateDir', ok: fs.existsSync(stateDir), severity: 'warn', detail: stateDir },
     { key: 'logsDir', ok: fs.existsSync(logsDir), severity: 'warn', detail: logsDir },
     { key: 'shop', ok: Boolean(env.SHOPIFY_SHOP || config.shop) && !isLikelyPlaceholder(env.SHOPIFY_SHOP || config.shop), severity: 'error', detail: env.SHOPIFY_SHOP || config.shop || null },
@@ -379,6 +411,9 @@ function doctor() {
 
   if (errors.some((x) => ['config.json', '.env', 'shopify-connector.mjs'].includes(x.key))) {
     suggestions.push(`Recreate the canonical runtime: node ./scripts/setup-runtime.mjs guided-setup --runtime-root ${shellQuote(runtimeRoot)}`);
+  }
+  if (warnings.some((x) => ['runtime.gitignore', 'runtime.gitignore.protectsSecrets'].includes(x.key))) {
+    suggestions.push(`Add a runtime .gitignore that ignores .env, state/, and logs/ under ${runtimeRoot}.`);
   }
   if (errors.some((x) => ['shop', 'apiKey', 'apiSecret', 'publicBaseUrl', 'redirectUri'].includes(x.key))) {
     suggestions.push(`Fill the missing or placeholder values in ${envPath} and ${configPath}. Keep secrets only in ${envPath}.`);
@@ -402,6 +437,7 @@ function doctor() {
     secretHandling: {
       secretsFile: envPath,
       tokenStorage: `${envPath} -> SHOPIFY_ACCESS_TOKEN`,
+      runtimeGitignore: gitignorePath,
       committedSecretsRecommended: false
     },
     checks,
