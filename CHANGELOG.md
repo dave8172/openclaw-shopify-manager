@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.0
+
+- add smoother post-setup usage examples for store info, list products, and get product by title or id
+- add `find-products` and `get-product --title` support to the connector runtime
+- add a canonical host installer helper script for host/systemd-oriented setups
+- upgrade the sidecar compose example into a more plug-and-play starter with a dedicated guide
+
 ## v0.1.9
 
 - add runtime `.gitignore` protection for `.env`, `state/`, and `logs/` during guided setup

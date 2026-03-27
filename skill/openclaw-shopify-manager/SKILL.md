@@ -114,6 +114,7 @@ Use write commands only after user confirmation.
 - Docker guide: `references/docker.md`
 - Shopify scopes and safety: `references/scopes-and-safety.md`
 - Runtime bootstrap: `scripts/setup-runtime.mjs`
+- Canonical host installer: `scripts/install-host-runtime.sh`
 - Connector runtime: `scripts/shopify-connector.mjs`
 - Service template: `assets/shopify-connector.service.txt`
 - Tailscale checker: `scripts/check-tailscale.sh`

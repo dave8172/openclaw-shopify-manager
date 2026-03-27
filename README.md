@@ -311,6 +311,10 @@ Recommended shape:
 - persistent mounted runtime volume
 - host Tailscale or host reverse proxy
 
+Plug-and-play sidecar starter:
+- compose file: `examples/docker-compose.sidecar.yml`
+- guide: `examples/docker-compose.sidecar.md`
+
 ---
 
 # Security posture
@@ -369,6 +373,10 @@ npm run package-skill
 # Links
 
 - Project page: <https://dave8172-website.vercel.app/projects/openclaw-shopify-manager>
+- GitHub releases: <https://github.com/dave8172/openclaw-shopify-manager/releases>
+- ClawHub listing: <https://clawhub.ai/skills/openclaw-shopify-manager>
+nager>
+2-website.vercel.app/projects/openclaw-shopify-manager>
 - GitHub releases: <https://github.com/dave8172/openclaw-shopify-manager/releases>
 - ClawHub listing: <https://clawhub.ai/skills/openclaw-shopify-manager>
 nager>

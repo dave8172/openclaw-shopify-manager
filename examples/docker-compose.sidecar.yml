@@ -1,15 +1,26 @@
 services:
   shopify-connector:
     image: node:22-bookworm-slim
+    container_name: shopify-connector
     working_dir: /runtime
     command: ["node", "/runtime/shopify-connector.mjs", "run-server"]
+    restart: unless-stopped
     volumes:
       - ./shopify-runtime:/runtime
-    restart: unless-stopped
     ports:
       - "127.0.0.1:8787:8787"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8787/healthz').then(r=>r.text()).then(t=>{if(t.trim()!=='ok') process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
-# Notes:
-# - Keep runtime files in ./shopify-runtime
-# - Copy shopify-connector.mjs, config.json, and .env into that directory
-# - Prefer host Tailscale or a host reverse proxy for public HTTPS
+# Plug-and-play sidecar pattern:
+# 1. Create ./shopify-runtime with the guided setup helper or copy in runtime files.
+# 2. Keep secrets in ./shopify-runtime/.env only.
+# 3. Start with: docker compose up -d
+# 4. Verify with: docker compose ps && docker compose logs --tail=50 shopify-connector
+# 5. Publish HTTPS from the host (recommended with Tailscale):
+#    tailscale serve --https=443 /shopify-manager http://127.0.0.1:8787
+#    tailscale funnel --https=443 on
